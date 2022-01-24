@@ -9,8 +9,12 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
+    "start": "run-script-os",
+    "start:win32": "set DOTENV_CONFIG_PATH=.env.dev && nest start",
+    "start:default": "DOTENV_CONFIG_PATH=.env.dev nest start",
+    "start:dev": "run-script-os",
+    "start:dev:win32": "set DOTENV_CONFIG_PATH=.env.dev && nest start --watch",
+    "start:dev:default": "DOTENV_CONFIG_PATH=.env.dev nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -27,6 +31,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "dotenv": "^10.0.0",
+    "run-script-os": "^1.1.6",
     "rxjs": "^7.2.0"
   },
   "devDependencies": {

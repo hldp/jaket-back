@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Coordinate } from './coordinate.shema';
+import { Coordinate } from './coordinate.schema';
 import { Price } from './price.schema';
 import { Schedule } from './schedule.schema';
 

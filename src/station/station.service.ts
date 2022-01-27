@@ -1,7 +1,7 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Station, StationDocument } from '../schemas/station.shema';
+import { Station, StationDocument } from '../schemas/station.schema';
 
 @Injectable()
 export class StationService {
@@ -17,6 +17,10 @@ export class StationService {
     return contracts.length + 1;
   }
 
+  /**
+   * Create a new Station
+   * @param name
+   */
   async create(name: string): Promise<Station> {
     const station = new this.stationModel();
     station._id = await this.getNextID();

@@ -2,14 +2,13 @@ import { Module } from '@nestjs/common';
 import { StationController } from './station/station.controller';
 import { StationService } from './station/station.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Station, StationSchema } from './schemas/station.shema';
+import { Station, StationSchema } from './schemas/station.schema';
 import * as dotenv from 'dotenv';
 import { HttpModule } from '@nestjs/axios';
 import { Schedule, ScheduleSchema } from './schemas/schedule.schema';
 import { Price, PriceSchema } from './schemas/price.schema';
-import { ApiController } from './api/api.controller';
-import { ApiService } from './api/api.service';
 import { ScheduleModule } from '@nestjs/schedule';
+import { OpenDataService } from './import/opendata.service';
 
 dotenv.config({ path: process.env.DOTENV_CONFIG_PATH ?? '../.env.prod' });
 
@@ -24,7 +23,7 @@ dotenv.config({ path: process.env.DOTENV_CONFIG_PATH ?? '../.env.prod' });
     HttpModule,
     ScheduleModule.forRoot(),
   ],
-  controllers: [StationController, ApiController],
-  providers: [StationService, ApiService],
+  controllers: [StationController],
+  providers: [StationService, OpenDataService],
 })
 export class AppModule {}

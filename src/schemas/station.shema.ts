@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { Coordinate } from './coordinate.shema';
+import { Price } from './price.schema';
+import { Schedule } from './schedule.schema';
 
 export type StationDocument = Station & Document;
 
@@ -17,6 +19,12 @@ export class Station {
 
   @Prop()
   address: string;
+
+  @Prop({ type: [Types.ObjectId], ref: Schedule.name })
+  schedules: Schedule[];
+
+  @Prop({ type: [Types.ObjectId], ref: Price.name })
+  prices: Price[];
 }
 
 export const StationSchema = SchemaFactory.createForClass(Station);

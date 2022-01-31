@@ -10,7 +10,7 @@ import { Price, PriceSchema } from './schemas/price.schema';
 import { ScheduleModule } from '@nestjs/schedule';
 import { OpenDataService } from './import/opendata.service';
 
-dotenv.config({ path: process.env.DOTENV_CONFIG_PATH ?? '../.env.prod' });
+dotenv.config({ path: process.env.DOTENV_CONFIG_PATH ?? './.env' });
 
 @Module({
   imports: [

@@ -1,8 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Body } from '@nestjs/common';
 import { StationService } from './station.service';
 import { OpenDataService } from '../import/opendata.service';
+import { ListAllStationsDto } from '../dto/ListAllStations.dto';
 
-@Controller('station')
+@Controller('stations')
 export class StationController {
   constructor(
     private readonly stationService: StationService,
@@ -10,8 +11,8 @@ export class StationController {
   ) {}
 
   @Get()
-  async findAll() {
-    return this.stationService.findAll();
+  async findAll(@Body() query: ListAllStationsDto) {
+    return this.stationService.findAll(query);
   }
 
   @Get('/createOne')

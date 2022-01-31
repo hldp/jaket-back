@@ -38,12 +38,12 @@ export class OpenDataService {
         }),
       )
       .subscribe(async (response) => {
-        console.log('Fetching xlm...');
+        console.log('Fetching xml...');
         const result = this.parseOpenDataZipToJson(response, '@_');
         const rawStations = result.pdv_liste.pdv;
         const saveActions: Promise<Station>[] = rawStations.map(
           function (rawStation) {
-            this.saveStation(rawStation);
+            return this.saveStation(rawStation);
           }.bind(this),
         );
         console.log('Saving...');
@@ -53,10 +53,39 @@ export class OpenDataService {
   }
 
   /**
+   *
+   * @param rawPrice
+   */
+  savePrice(rawPrice: any): Price {
+    const price = new this.priceModel();
+    price.gaz_id = rawPrice['@_id'];
+    price.gaz_name = rawPrice['@_nom'];
+    price.last_update = new Date(rawPrice['@_maj']);
+    price.price = rawPrice['@_valeur'];
+    price.save();
+    return price;
+  }
+
+  saveSchedule(rawSchedule: any): Schedule {
+    const schedule = new this.scheduleModel();
+    schedule.schedule_id = rawSchedule['@_id'];
+    schedule.day = rawSchedule['@_nom'];
+    schedule.open = rawSchedule['@_ferme'] == '';
+    schedule.opening = rawSchedule.horaire
+      ? rawSchedule.horaire['@_ouverture'] ?? ''
+      : '';
+    schedule.closing = rawSchedule.horaire
+      ? rawSchedule.horaire['@_fermeture'] ?? ''
+      : '';
+    schedule.save();
+    return schedule;
+  }
+
+  /**
    * Save a raw station in db
    * @param rawStation
    */
-  async saveStation(rawStation: any): Promise<Station> {
+  async saveStation(rawStation: any): Promise<void> {
     let station = await this.stationModel
       .findOne({ _id: rawStation['@_id'] })
       .exec();
@@ -75,15 +104,12 @@ export class OpenDataService {
     //Extract prices
     const prices = [];
     if (rawStation.prix && rawStation.prix.length > 0) {
-      for (const prix of rawStation.prix) {
-        const price = new this.priceModel();
-        price.gaz_id = prix['@_id'];
-        price.gaz_name = prix['@_nom'];
-        price.last_update = new Date(prix['@_maj']);
-        price.price = prix['@_valeur'];
-        await price.save();
-        prices.push(price);
-      }
+      const savePrices: Promise<Price>[] = rawStation.prix.map(
+        function (rawPrice) {
+          prices.push(this.savePrice(rawPrice));
+        }.bind(this),
+      );
+      await Promise.all(savePrices);
     }
     station.prices = prices;
 
@@ -94,25 +120,16 @@ export class OpenDataService {
       rawStation.horaires.jour &&
       rawStation.horaires.jour.length > 0
     ) {
-      for (const jour of rawStation.horaires.jour) {
-        const schedule = new this.scheduleModel();
-        schedule.schedule_id = jour['@_id'];
-        schedule.day = jour['@_nom'];
-        schedule.open = jour['@_ferme'] == '';
-        schedule.opening = jour.horaire
-          ? jour.horaire['@_ouverture'] ?? ''
-          : '';
-        schedule.closing = jour.horaire
-          ? jour.horaire['@_fermeture'] ?? ''
-          : '';
-        await schedule.save();
-        schedules.push(schedule);
-      }
+      const saveSchedules: Promise<Schedule>[] = rawStation.horaires.jour.map(
+        function (rawSchedule) {
+          schedules.push(this.saveSchedule(rawSchedule));
+        }.bind(this),
+      );
+      await Promise.all(saveSchedules);
     }
     station.schedules = schedules;
 
     await station.save();
-    return station;
   }
 
   /**

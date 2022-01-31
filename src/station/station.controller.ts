@@ -11,8 +11,12 @@ export class StationController {
 
   @Get()
   async findAll() {
-    await this.stationService.create('test');
     return this.stationService.findAll();
+  }
+
+  @Get('/createOne')
+  async createOne() {
+    await this.stationService.create('test');
   }
 
   @Get('/fetch')

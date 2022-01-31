@@ -9,6 +9,7 @@ import { Schedule, ScheduleSchema } from './schemas/schedule.schema';
 import { Price, PriceSchema } from './schemas/price.schema';
 import { ScheduleModule } from '@nestjs/schedule';
 import { OpenDataService } from './import/opendata.service';
+import { AppController } from './app.controller';
 
 dotenv.config({ path: process.env.DOTENV_CONFIG_PATH ?? './.env' });
 
@@ -23,7 +24,7 @@ dotenv.config({ path: process.env.DOTENV_CONFIG_PATH ?? './.env' });
     HttpModule,
     ScheduleModule.forRoot(),
   ],
-  controllers: [StationController],
+  controllers: [StationController, AppController],
   providers: [StationService, OpenDataService],
 })
 export class AppModule {}

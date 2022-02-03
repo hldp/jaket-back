@@ -1,0 +1,11 @@
+{
+  "apps": [
+    {
+      "app_id": "app_901f6463-ce0a-4b60-9655-7016bcf345b7",
+      "org_id": "orga_4536742f-0dcf-4d61-9969-4feb1f3bd6e9",
+      "deploy_url": "https://github.com/hldp/jaket-back.git",
+      "name": "jaket-back",
+      "alias": "jaket-back"
+    }
+  ]
+}

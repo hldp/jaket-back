@@ -2,7 +2,7 @@ name: CI Integration
 on:
   push:
     branches:
-      - main
+      - gcp
 jobs:
   deploy_jaket_back:
     runs-on: ubuntu-latest

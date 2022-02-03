@@ -1,0 +1,27 @@
+name: CI Integration
+on:
+  push:
+    branches:
+      - gcp
+jobs:
+  deploy_jaket_back:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Initialize Google Cloud SDK
+        uses: zxyle/publish-gae-action@master
+        with:
+          service_account_email: ${{ secrets.EMAIL }}
+          service_account_key: ${{ secrets.KEY }}
+          project_id: ${{ secrets.PROJECTID }}
+          gae_config_path: app.yaml
+
+      - name: Publish app to Google App Engine
+        run: |
+          # This client-secret.json is converted by GCP_SA_KEY.
+          gcloud auth activate-service-account ${{ secrets.GCP_SA_EMAIL  }} --key-file=client-secret.json
+          gcloud config set project ${{ secrets.PROJECTID }}
+          gcloud -q app deploy name: CI Integration

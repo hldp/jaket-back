@@ -16,6 +16,9 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/api', app, document);
+  
+  console.log(process.env.PORT);
+  console.log(process.env);
 
   await app.listen(process.env.PORT || 8080, '0.0.0.0');
   new Logger('NestApplication').log(`Starting on PORT ${process.env.PORT}`);

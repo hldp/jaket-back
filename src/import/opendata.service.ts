@@ -10,6 +10,7 @@ import * as Zip from 'adm-zip';
 import { XMLParser } from 'fast-xml-parser';
 import { Iconv } from 'iconv';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Point } from '../dto/point.dto';
 
 @Injectable()
 export class OpenDataService {
@@ -95,11 +96,20 @@ export class OpenDataService {
     //Extract general data
     station._id = rawStation['@_id'];
     station.name = '';
-    station.address = rawStation.adresse;
-    station.position = {
-      latitude: rawStation['@_latitude'],
-      longitude: rawStation['@_longitude'],
-    };
+    //fix string to number xml conversion
+    const zipcode =
+      rawStation['@_cp'] < 10000
+        ? '0' + rawStation['@_cp']
+        : rawStation['@_cp'];
+    station.address = `${rawStation.adresse}, ${zipcode} ${rawStation.ville}`;
+
+    const point = new Point();
+    point.type = 'Point';
+    point.coordinates = [
+      rawStation['@_longitude'] / 1e5,
+      rawStation['@_latitude'] / 1e5,
+    ];
+    station.position = point;
 
     //Extract prices
     const prices = [];

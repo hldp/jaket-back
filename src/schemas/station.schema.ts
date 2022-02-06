@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Coordinate } from './coordinate.schema';
+import { Point } from '../dto/point.dto';
 import { Price } from './price.schema';
 import { Schedule } from './schedule.schema';
 
@@ -15,7 +15,7 @@ export class Station {
   name: string;
 
   @Prop()
-  position: Coordinate;
+  position: Point;
 
   @Prop()
   address: string;
@@ -28,3 +28,19 @@ export class Station {
 }
 
 export const StationSchema = SchemaFactory.createForClass(Station);
+
+StationSchema.index({ position: '2dsphere' });
+
+StationSchema.set('toJSON', {
+  transform: function (doc, ret) {
+    ret.id = ret._id;
+    if (ret.position) {
+      ret.position = {
+        longitude: ret.position.coordinates[0],
+        latitude: ret.position.coordinates[1],
+      };
+    }
+    delete ret._id;
+    delete ret.__v;
+  },
+});

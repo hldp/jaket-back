@@ -1,4 +1,4 @@
-import { ListAllStationsFiltersDto } from './ListAllStationsFilters.dto';
+import { ListAllStationsFiltersDto } from './listAllStationsFilters.dto';
 
 export class ListAllStationsDto {
   columns?: string[];

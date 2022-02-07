@@ -1,4 +1,4 @@
-import { ListAllStationsFiltersByAreaDto } from './ListAllStationsFiltersByArea.dto';
+import { ListAllStationsFiltersByAreaDto } from './listAllStationsFiltersByArea.dto';
 
 export class ListAllStationsFiltersDto {
   gazAvailables?: number[];

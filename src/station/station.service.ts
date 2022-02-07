@@ -2,7 +2,7 @@ import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Station, StationDocument } from '../schemas/station.schema';
-import { ListAllStationsDto } from '../dto/ListAllStations.dto';
+import { ListAllStationsDto } from '../dto/listAllStations.dto';
 import { StationResponseDto } from '../dto/StationResponse.dto';
 import { Price, PriceDocument } from '../schemas/price.schema';
 

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Station, StationDocument } from '../schemas/station.schema';
 import { ListAllStationsDto } from '../dto/listAllStations.dto';
-import { StationResponseDto } from '../dto/StationResponse.dto';
+import { StationResponseDto } from '../dto/stationResponse.dto';
 import { Price, PriceDocument } from '../schemas/price.schema';
 
 @Injectable()

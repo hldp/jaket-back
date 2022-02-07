@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Body } from '@nestjs/common';
 import { StationService } from './station.service';
 import { OpenDataService } from '../import/opendata.service';
-import { ListAllStationsDto } from '../dto/ListAllStations.dto';
+import { ListAllStationsDto } from '../dto/listAllStations.dto';
 
 @Controller('stations')
 export class StationController {

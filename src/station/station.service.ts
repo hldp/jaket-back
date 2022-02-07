@@ -5,6 +5,8 @@ import { Station, StationDocument } from '../schemas/station.schema';
 import { ListAllStationsDto } from '../dto/listAllStations.dto';
 import { StationResponseDto } from '../dto/stationResponse.dto';
 import { Price, PriceDocument } from '../schemas/price.schema';
+import { ListAllStationsForAverageDto } from '../dto/listAllStationsForAverage.dto';
+import { GasPriceAverageDto } from '../dto/gasPriceAverage.dto';
 
 @Injectable()
 export class StationService {
@@ -52,6 +54,29 @@ export class StationService {
     res.offset = query.offset ?? 0;
     res.data = data;
     return res;
+  }
+
+  /**
+   * Find price average for each gas
+   * @param query
+   */
+  async getPriceAverage(
+    query: ListAllStationsForAverageDto,
+  ): Promise<GasPriceAverageDto[]> {
+    const priceAveragePerGas = [];
+    const data = await this.applyFilter(this.stationModel.find(), query);
+    const prices = data.map((station) => station.prices);
+    const pricesPerGas = this.groupBy(prices.flat(), (price) => price.gaz_name);
+    for (const [gas_name, prices] of pricesPerGas) {
+      const totalPrice = prices.reduce((acc, value) => {
+        return acc + value.price;
+      }, 0);
+      priceAveragePerGas.push({
+        gaz_name: gas_name,
+        price_average: parseFloat((totalPrice / prices.length).toFixed(3)),
+      });
+    }
+    return priceAveragePerGas;
   }
 
   async applyFilter(search: any, query: ListAllStationsDto): Promise<any> {
@@ -111,5 +136,19 @@ export class StationService {
     if (query.offset) search.skip(query.offset);
 
     return search.exec();
+  }
+
+  private groupBy(list, keyGetter) {
+    const map = new Map();
+    list.forEach((item) => {
+      const key = keyGetter(item);
+      const collection = map.get(key);
+      if (!collection) {
+        map.set(key, [item]);
+      } else {
+        collection.push(item);
+      }
+    });
+    return map;
   }
 }

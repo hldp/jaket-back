@@ -2,6 +2,7 @@ import { Controller, Get, Param, Body } from '@nestjs/common';
 import { StationService } from './station.service';
 import { OpenDataService } from '../import/opendata.service';
 import { ListAllStationsDto } from '../dto/listAllStations.dto';
+import { ListAllStationsForAverageDto } from '../dto/listAllStationsForAverage.dto';
 
 @Controller('stations')
 export class StationController {
@@ -13,6 +14,11 @@ export class StationController {
   @Get()
   async findAll(@Body() query: ListAllStationsDto) {
     return this.stationService.findAll(query);
+  }
+
+  @Get('/price-average')
+  async getPriceAverage(@Body() query: ListAllStationsForAverageDto) {
+    return this.stationService.getPriceAverage(query);
   }
 
   @Get('/createOne')

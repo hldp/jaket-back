@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Body } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { StationService } from './station.service';
 import { OpenDataService } from '../import/opendata.service';
 import { ListAllStationsDto } from '../dto/listAllStations.dto';
@@ -12,12 +12,12 @@ export class StationController {
   ) {}
 
   @Get()
-  async findAll(@Body() query: ListAllStationsDto) {
+  async findAll(@Query() query: ListAllStationsDto) {
     return this.stationService.findAll(query);
   }
 
   @Get('/price-average')
-  async getPriceAverage(@Body() query: ListAllStationsForAverageDto) {
+  async getPriceAverage(@Query() query: ListAllStationsForAverageDto) {
     return this.stationService.getPriceAverage(query);
   }
 

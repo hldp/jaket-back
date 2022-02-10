@@ -78,19 +78,19 @@ describe('StationController (e2e)', () => {
     });
 
     it('Filter by gas available', async () => {
-      const gazAvailables = [1, 3];
+      const gasAvailables = [1, 3];
       const response = await request(app.getHttpServer())
         .get('/stations')
         .send({
           limit: 10,
           filters: {
-            gazAvailables: gazAvailables,
+            gasAvailables: gasAvailables,
           },
         });
       expect(response.status).toEqual(200);
       for (const station of response.body.data) {
         expect(
-          station.prices.filter((value) => gazAvailables.includes(value)),
+          station.prices.filter((value) => gasAvailables.includes(value)),
         ).toBeTruthy();
       }
     });

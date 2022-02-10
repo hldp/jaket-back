@@ -27,7 +27,7 @@ export class OpenDataService {
   /**
    * Fetch stations from gov open data
    */
-  @Cron(CronExpression.EVERY_4_HOURS)
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async fetchFromOpenData(): Promise<void> {
     await this.httpService
       .get(OpenDataService.API_BASE_URL + '/opendata/instantane', {
@@ -59,8 +59,8 @@ export class OpenDataService {
    */
   savePrice(rawPrice: any): Price {
     const price = new this.priceModel();
-    price.gaz_id = rawPrice['@_id'];
-    price.gaz_name = rawPrice['@_nom'];
+    price.gas_id = rawPrice['@_id'];
+    price.gas_name = rawPrice['@_nom'];
     price.last_update = new Date(rawPrice['@_maj']);
     price.price = rawPrice['@_valeur'];
     price.save();

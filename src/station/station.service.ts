@@ -50,7 +50,7 @@ export class StationService {
     const data = await this.applyFilter(this.stationModel.find(), query);
 
     const res = new StationResponseDto();
-    res.limit = query.limit ?? data.lenght;
+    res.limit = +query.limit ?? data.lenght;
     res.offset = query.offset ?? 0;
     res.data = data;
     return res;
@@ -66,13 +66,13 @@ export class StationService {
     const priceAveragePerGas = [];
     const data = await this.applyFilter(this.stationModel.find(), query);
     const prices = data.map((station) => station.prices);
-    const pricesPerGas = this.groupBy(prices.flat(), (price) => price.gaz_name);
+    const pricesPerGas = this.groupBy(prices.flat(), (price) => price.gas_name);
     for (const [gas_name, prices] of pricesPerGas) {
       const totalPrice = prices.reduce((acc, value) => {
         return acc + value.price;
       }, 0);
       priceAveragePerGas.push({
-        gaz_name: gas_name,
+        gas_name: gas_name,
         price_average: parseFloat((totalPrice / prices.length).toFixed(3)),
       });
     }
@@ -106,9 +106,9 @@ export class StationService {
     }
 
     //Filter by gas available
-    if (query.filters?.gazAvailables) {
+    if (query.filters?.gasAvailables) {
       const stations = await this.priceModel
-        .find({ gaz_id: { $in: query.filters.gazAvailables } }, { _id: 1 })
+        .find({ gas_id: { $in: query.filters.gasAvailables } }, { _id: 1 })
         .exec();
       const ids = stations.map(function (doc) {
         return doc._id;

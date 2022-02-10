@@ -1,4 +1,4 @@
 export class GasPriceAverageDto {
-  gaz_name: string;
+  gas_name: string;
   average_price: number;
 }

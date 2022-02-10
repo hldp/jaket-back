@@ -1,6 +1,6 @@
 import { ListAllStationsFiltersByAreaDto } from './listAllStationsFiltersByArea.dto';
 
 export class ListAllStationsFiltersDto {
-  gazAvailables?: number[];
+  gasAvailables?: number[];
   area?: ListAllStationsFiltersByAreaDto;
 }

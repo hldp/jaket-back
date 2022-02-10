@@ -6,10 +6,10 @@ export type PriceDocument = Price & Document;
 @Schema()
 export class Price {
   @Prop()
-  gaz_id: number;
+  gas_id: number;
 
   @Prop()
-  gaz_name: string;
+  gas_name: string;
 
   @Prop()
   last_update: Date;

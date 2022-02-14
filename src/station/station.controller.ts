@@ -13,7 +13,6 @@ export class StationController {
 
   @Get()
   async findAll(@Query() query: ListAllStationsDto) {
-    console.log(query);
     return this.stationService.findAll(query);
   }
 

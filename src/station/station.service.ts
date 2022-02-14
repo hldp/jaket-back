@@ -60,8 +60,9 @@ export class StationService {
     const data = await this.applyFilter(this.stationModel.find(), query);
 
     const res = new StationResponseDto();
-    res.limit = +query.limit ?? data.lenght;
+    if (query.limit) res.limit = +query.limit;
     res.offset = query.offset ?? 0;
+    res.nb_items = data.length;
     res.data = data;
     return res;
   }
@@ -128,14 +129,12 @@ export class StationService {
 
     //Filter by location
     if (query.filters?.area) {
-      query.filters.area.coordinate.longitude = +query.filters.area.coordinate.longitude;
-      query.filters.area.coordinate.latitude = +query.filters.area.coordinate.latitude;
       search.find({
         position: {
           $near: {
             $geometry: {
               type: 'Point',
-              coordinates: query.filters.area.coordinate,
+              coordinates: [+query.filters.area.coordinate.longitude, +query.filters.area.coordinate.latitude],
             },
             $maxDistance: +query.filters.area.radius,
           },

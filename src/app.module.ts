@@ -18,6 +18,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './account/local.strategy';
 import { JwtStrategy } from './account/jwt.strategy';
 import * as bcrypt from 'bcrypt';
+import { UserFillGas, UserFillGasSchema } from './schemas/userFillGas';
 
 dotenv.config({ path: process.env.DOTENV_CONFIG_PATH ?? './.env' });
 
@@ -28,6 +29,7 @@ dotenv.config({ path: process.env.DOTENV_CONFIG_PATH ?? './.env' });
       { name: Station.name, schema: StationSchema },
       { name: Schedule.name, schema: ScheduleSchema },
       { name: Price.name, schema: PriceSchema },
+      { name: UserFillGas.name, schema: UserFillGasSchema },
     ]),
     MongooseModule.forFeatureAsync([
       {
@@ -47,7 +49,7 @@ dotenv.config({ path: process.env.DOTENV_CONFIG_PATH ?? './.env' });
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: {
-        expiresIn: '60s',
+        expiresIn: '1d',
       },
     }),
     ScheduleModule.forRoot(),

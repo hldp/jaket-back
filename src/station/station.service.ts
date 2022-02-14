@@ -39,7 +39,17 @@ export class StationService {
    * @param id
    */
   async findOne(id: number): Promise<Station> {
-    return await this.stationModel.findOne({ _id: id }).exec();
+    return this.stationModel
+      .findOne({ _id: id })
+      .populate({
+        path: 'prices',
+        select: '-__v -_id',
+      })
+      .populate({
+        path: 'schedules',
+        select: '-__v -_id',
+      })
+      .exec();
   }
 
   /**
@@ -66,13 +76,13 @@ export class StationService {
     const priceAveragePerGas = [];
     const data = await this.applyFilter(this.stationModel.find(), query);
     const prices = data.map((station) => station.prices);
-    const pricesPerGas = this.groupBy(prices.flat(), (price) => price.gas_name);
-    for (const [gas_name, prices] of pricesPerGas) {
+    const pricesPerGas = this.groupBy(prices.flat(), (price) => price.gas_id);
+    for (const [gas_id, prices] of pricesPerGas) {
       const totalPrice = prices.reduce((acc, value) => {
         return acc + value.price;
       }, 0);
       priceAveragePerGas.push({
-        gas_name: gas_name,
+        gas_id: gas_id,
         price_average: parseFloat((totalPrice / prices.length).toFixed(3)),
       });
     }
@@ -118,6 +128,8 @@ export class StationService {
 
     //Filter by location
     if (query.filters?.area) {
+      query.filters.area.coordinate.longitude = +query.filters.area.coordinate.longitude;
+      query.filters.area.coordinate.latitude = +query.filters.area.coordinate.latitude;
       search.find({
         position: {
           $near: {
@@ -125,7 +137,7 @@ export class StationService {
               type: 'Point',
               coordinates: query.filters.area.coordinate,
             },
-            $maxDistance: query.filters.area.radius,
+            $maxDistance: +query.filters.area.radius,
           },
         },
       });

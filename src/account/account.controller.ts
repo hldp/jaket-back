@@ -1,14 +1,8 @@
-import {
-  Controller,
-  UseGuards,
-  Post,
-  Request,
-  Get,
-  Body,
-} from '@nestjs/common';
+import { Controller, UseGuards, Post, Request, Body } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { FillGasDto } from '../dto/fillGas.dto';
 
 @Controller('')
 export class AccountController {
@@ -20,10 +14,11 @@ export class AccountController {
     return this.accountService.login(req.user);
   }
 
+  @Post('/user/fillGas')
   @UseGuards(JwtAuthGuard)
-  @Get('/stats')
-  async getStats() {
-    return true;
+  async fillGas(@Body() query: FillGasDto, @Request() req): Promise<boolean> {
+    await this.accountService.validateUserByIdAndUsername(req.user);
+    return await this.accountService.fillGas(req.user._id, query);
   }
 
   @Post('/register')

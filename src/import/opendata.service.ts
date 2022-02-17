@@ -56,10 +56,12 @@ export class OpenDataService {
   /**
    *
    * @param rawPrice
+   * @param station_id
    */
-  savePrice(rawPrice: any): Price {
+  savePrice(rawPrice: any, station_id: number): Price {
     const price = new this.priceModel();
     price.gas_id = rawPrice['@_id'];
+    price.station_id = station_id;
     price.gas_name = rawPrice['@_nom'];
     price.last_update = new Date(rawPrice['@_maj']);
     price.price = rawPrice['@_valeur'];
@@ -118,7 +120,7 @@ export class OpenDataService {
       const savePrices: Promise<Price>[] = rawStation.prix.map(
         function (rawPrice) {
           station.rawPrices.set(rawPrice['@_nom'], rawPrice['@_valeur']);
-          prices.push(this.savePrice(rawPrice));
+          prices.push(this.savePrice(rawPrice, rawStation['@_id']));
         }.bind(this),
       );
       await Promise.all(savePrices);

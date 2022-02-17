@@ -9,6 +9,9 @@ export class Price {
   gas_id: number;
 
   @Prop()
+  station_id: number;
+
+  @Prop()
   gas_name: string;
 
   @Prop()

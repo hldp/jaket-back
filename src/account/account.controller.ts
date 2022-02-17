@@ -3,12 +3,18 @@ import {
   UseGuards,
   Post,
   Request,
-  Get,
   Body,
+  Get,
+  Query,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { FillGasDto } from '../dto/fillGas.dto';
+import { FillGasStatsDto } from '../dto/fillGasStats.dto';
+import { FillGasStatsPeriodEnum } from '../dto/fillGasStatsPeriodEnum';
 
 @Controller('')
 export class AccountController {
@@ -20,10 +26,24 @@ export class AccountController {
     return this.accountService.login(req.user);
   }
 
+  @Post('/user/fillGas')
   @UseGuards(JwtAuthGuard)
-  @Get('/stats')
-  async getStats() {
-    return true;
+  async fillGas(@Body() query: FillGasDto, @Request() req): Promise<boolean> {
+    await this.accountService.validateUserByIdAndUsername(req.user);
+    return await this.accountService.fillGas(req.user._id, query);
+  }
+
+  @Get('/user/stats/fillGas')
+  @UseGuards(JwtAuthGuard)
+  async fillGasStats(
+    @Request() req,
+    @Query() query: { period: FillGasStatsPeriodEnum },
+  ): Promise<FillGasStatsDto> {
+    if (!Object.values(FillGasStatsPeriodEnum).includes(query.period)) {
+      throw new HttpException('Period is not valid !', HttpStatus.BAD_REQUEST);
+    }
+    await this.accountService.validateUserByIdAndUsername(req.user);
+    return await this.accountService.fillGasStats(req.user._id, query.period);
   }
 
   @Post('/register')

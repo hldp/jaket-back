@@ -39,7 +39,17 @@ export class StationService {
    * @param id
    */
   async findOne(id: number): Promise<Station> {
-    return await this.stationModel.findOne({ _id: id }).exec();
+    return this.stationModel
+      .findOne({ _id: id })
+      .populate({
+        path: 'prices',
+        select: '-__v -_id',
+      })
+      .populate({
+        path: 'schedules',
+        select: '-__v -_id',
+      })
+      .exec();
   }
 
   /**
@@ -50,8 +60,9 @@ export class StationService {
     const data = await this.applyFilter(this.stationModel.find(), query);
 
     const res = new StationResponseDto();
-    res.limit = +query.limit ?? data.lenght;
+    if (query.limit) res.limit = +query.limit;
     res.offset = query.offset ?? 0;
+    res.nb_items = data.length;
     res.data = data;
     return res;
   }
@@ -66,13 +77,13 @@ export class StationService {
     const priceAveragePerGas = [];
     const data = await this.applyFilter(this.stationModel.find(), query);
     const prices = data.map((station) => station.prices);
-    const pricesPerGas = this.groupBy(prices.flat(), (price) => price.gas_name);
-    for (const [gas_name, prices] of pricesPerGas) {
+    const pricesPerGas = this.groupBy(prices.flat(), (price) => price.gas_id);
+    for (const [gas_id, prices] of pricesPerGas) {
       const totalPrice = prices.reduce((acc, value) => {
         return acc + value.price;
       }, 0);
       priceAveragePerGas.push({
-        gas_name: gas_name,
+        gas_id: gas_id,
         price_average: parseFloat((totalPrice / prices.length).toFixed(3)),
       });
     }
@@ -123,9 +134,9 @@ export class StationService {
           $near: {
             $geometry: {
               type: 'Point',
-              coordinates: query.filters.area.coordinate,
+              coordinates: [+query.filters.area.coordinate.longitude, +query.filters.area.coordinate.latitude],
             },
-            $maxDistance: query.filters.area.radius,
+            $maxDistance: +query.filters.area.radius,
           },
         },
       });

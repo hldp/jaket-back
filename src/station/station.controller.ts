@@ -16,8 +16,13 @@ export class StationController {
     return this.stationService.findAll(query);
   }
 
-  @Get('/price-average')
+  @Get('/prices/average')
   async getPriceAverage(@Query() query: ListAllStationsForAverageDto) {
+    return this.stationService.getPriceAverage(query);
+  }
+
+  @Get('/prices/trends')
+  async getPriceTrends(@Query() query: ListAllStationsForAverageDto) {
     return this.stationService.getPriceAverage(query);
   }
 
@@ -32,7 +37,7 @@ export class StationController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.stationService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.stationService.findOne(id);
   }
 }

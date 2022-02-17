@@ -125,7 +125,6 @@ export class OpenDataService {
       );
       await Promise.all(savePrices);
     }
-    console.log(station.rawPrices);
     station.prices = prices;
 
     //Extract schedules

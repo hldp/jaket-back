@@ -23,6 +23,9 @@ export class Station {
   @Prop({ type: [Types.ObjectId], ref: Schedule.name })
   schedules: Schedule[];
 
+  @Prop()
+  rawPrices: Map<string, number>;
+
   @Prop({ type: [Types.ObjectId], ref: Price.name })
   prices: Price[];
 }

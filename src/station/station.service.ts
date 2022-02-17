@@ -7,7 +7,7 @@ import { StationResponseDto } from '../dto/stationResponse.dto';
 import { Price, PriceDocument } from '../schemas/price.schema';
 import { ListAllStationsForAverageDto } from '../dto/listAllStations/listAllStationsForAverage.dto';
 import { GasPriceAverageDto } from '../dto/gasPriceAverage.dto';
-import { Order } from "../dto/listAllStations/listAllStationsOrders.dto";
+import { Order } from '../dto/listAllStations/listAllStationsOrders.dto';
 
 @Injectable()
 export class StationService {
@@ -161,7 +161,7 @@ export class StationService {
         search.sort({ _id: Order[query.orders.id] });
       }
       for (const [key, value] of Object.entries(query.orders.gas)) {
-        search.sort({ [key]: Order[value.toString()] });
+        search.sort({ ['rawPrices.' + key]: Order[value.toString()] });
       }
     }
 

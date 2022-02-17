@@ -1,8 +1,8 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { StationService } from './station.service';
 import { OpenDataService } from '../import/opendata.service';
-import { ListAllStationsDto } from '../dto/listAllStations.dto';
-import { ListAllStationsForAverageDto } from '../dto/listAllStationsForAverage.dto';
+import { ListAllStationsDto } from '../dto/listAllStations/listAllStations.dto';
+import { ListAllStationsForAverageDto } from '../dto/listAllStations/listAllStationsForAverage.dto';
 
 @Controller('stations')
 export class StationController {

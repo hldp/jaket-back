@@ -2,11 +2,12 @@ import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Station, StationDocument } from '../schemas/station.schema';
-import { ListAllStationsDto } from '../dto/listAllStations.dto';
+import { ListAllStationsDto } from '../dto/listAllStations/listAllStations.dto';
 import { StationResponseDto } from '../dto/stationResponse.dto';
 import { Price, PriceDocument } from '../schemas/price.schema';
-import { ListAllStationsForAverageDto } from '../dto/listAllStationsForAverage.dto';
+import { ListAllStationsForAverageDto } from '../dto/listAllStations/listAllStationsForAverage.dto';
 import { GasPriceAverageDto } from '../dto/gasPriceAverage.dto';
+import { Order } from '../dto/listAllStations/listAllStationsOrders.dto';
 
 @Injectable()
 export class StationService {
@@ -99,6 +100,9 @@ export class StationService {
           search.populate({
             path: column,
             select: '-__v -_id',
+            options: {
+              sort: 'price schedule_id',
+            },
           });
           search.select({ '-_id': 1 });
         } else {
@@ -109,17 +113,23 @@ export class StationService {
       search.populate({
         path: 'prices',
         select: '-__v -_id',
+        options: {
+          sort: 'price',
+        },
       });
       search.populate({
         path: 'schedules',
         select: '-__v -_id',
+        options: {
+          sort: 'schedule_id',
+        },
       });
     }
 
     //Filter by gas available
     if (query.filters?.gasAvailables) {
       const stations = await this.priceModel
-        .find({ gas_id: { $in: query.filters.gasAvailables } }, { _id: 1 })
+        .find({ gas_name: { $in: query.filters.gasAvailables } }, { _id: 1 })
         .exec();
       const ids = stations.map(function (doc) {
         return doc._id;
@@ -134,12 +144,25 @@ export class StationService {
           $near: {
             $geometry: {
               type: 'Point',
-              coordinates: [+query.filters.area.coordinate.longitude, +query.filters.area.coordinate.latitude],
+              coordinates: [
+                +query.filters.area.coordinate.longitude,
+                +query.filters.area.coordinate.latitude,
+              ],
             },
             $maxDistance: +query.filters.area.radius,
           },
         },
       });
+    }
+
+    //orders
+    if (query.orders) {
+      if (query.orders.id) {
+        search.sort({ _id: Order[query.orders.id] });
+      }
+      for (const [key, value] of Object.entries(query.orders.gas)) {
+        search.sort({ ['rawPrices.' + key]: Order[value.toString()] });
+      }
     }
 
     //pagination

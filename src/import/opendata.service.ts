@@ -115,14 +115,17 @@ export class OpenDataService {
 
     //Extract prices
     const prices = [];
+    station.rawPrices = new Map<string, number>();
     if (rawStation.prix && rawStation.prix.length > 0) {
       const savePrices: Promise<Price>[] = rawStation.prix.map(
         function (rawPrice) {
+          station.rawPrices.set(rawPrice['@_nom'], rawPrice['@_valeur']);
           prices.push(this.savePrice(rawPrice, rawStation['@_id']));
         }.bind(this),
       );
       await Promise.all(savePrices);
     }
+    console.log(station.rawPrices);
     station.prices = prices;
 
     //Extract schedules

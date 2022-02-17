@@ -18,7 +18,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './account/local.strategy';
 import { JwtStrategy } from './account/jwt.strategy';
 import * as bcrypt from 'bcrypt';
-import { UserFillGas, UserFillGasSchema } from './schemas/userFillGas';
+import { UserFillGas, UserFillGasSchema } from './schemas/userFillGas.schema';
 
 dotenv.config({ path: process.env.DOTENV_CONFIG_PATH ?? './.env' });
 

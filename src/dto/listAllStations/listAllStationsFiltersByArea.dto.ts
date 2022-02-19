@@ -1,5 +1,4 @@
-import { Coordinate } from './coordinate.model';
-
+import { Coordinate } from '../coordinate.model';
 export class ListAllStationsFiltersByAreaDto {
   coordinate: Coordinate;
   radius: number;

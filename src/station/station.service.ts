@@ -14,7 +14,6 @@ import { StationOptionsDto } from '../dto/stationOptions.dto';
 import {
   PriceTrends,
   PriceTrendsDocument,
-  PriceTrendsSchema,
 } from '../schemas/priceTrends.schema';
 
 @Injectable()
@@ -144,13 +143,12 @@ export class StationService {
           },
         };
       }
-
-      if (query.gas_name) {
+      if (query.gas_names.length > 0) {
         searchQuery = {
           ...searchQuery,
           filters: {
             ...searchQuery.filters,
-            gasAvailables: [query.gas_name],
+            gasAvailables: query.gas_names,
           },
         };
       }
@@ -194,13 +192,15 @@ export class StationService {
 
     const evolutionPerGas = { period: query.period, evolutions: [] };
     for (const [gas_name, evolutions] of evolutionGroupByGas) {
-      evolutionPerGas.evolutions.push({
-        gas_name: gas_name,
-        evolution: (
-          evolutions.map((ev) => ev.evolution).reduce((c, n) => c + n) /
-          evolutions.length
-        ).toFixed(2),
-      });
+      if (query.gas_names.length === 0 || query.gas_names.includes(gas_name)) {
+        evolutionPerGas.evolutions.push({
+          gas_name: gas_name,
+          evolution: (
+            evolutions.map((ev) => ev.evolution).reduce((c, n) => c + n) /
+            evolutions.length
+          ).toFixed(2),
+        });
+      }
     }
 
     return evolutionPerGas;

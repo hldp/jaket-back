@@ -346,14 +346,17 @@ export class StationService {
 
     //Filter by gas available
     if (query.filters?.gasAvailables) {
-      const stations = await this.priceModel
-        .find({ gas_name: { $in: query.filters.gasAvailables } }, { _id: 1 })
-        .exec();
-      const ids = stations.map(function (doc) {
-        return doc._id;
-      });
-      search.find({ prices: { $in: ids } });
+      const gasAvaiableConditions = [];
+      for (const gas of query.filters?.gasAvailables) {
+        gasAvaiableConditions.push({
+          ['rawPrices.' + gas]: {
+            $exists: true,
+          },
+        });
+      }
+      search.find({ $or: gasAvaiableConditions });
     }
+
     //Filter by location
     if (query.filters?.area) {
       search.find({

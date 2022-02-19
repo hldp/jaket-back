@@ -28,6 +28,7 @@ describe('StationController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    console.log(app);
     await app.init();
   });
 
@@ -78,7 +79,7 @@ describe('StationController (e2e)', () => {
     });
 
     it('Filter by gas available', async () => {
-      const gasAvailables = [1, 3];
+      const gasAvailables = ['Gazole', 'SP98'];
       const response = await request(app.getHttpServer())
         .get('/stations')
         .send({

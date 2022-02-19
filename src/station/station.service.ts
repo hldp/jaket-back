@@ -10,12 +10,19 @@ import { GasPriceAverageDto } from '../dto/gasPriceAverage.dto';
 import { PricesTrendsDto } from '../dto/pricesTrends.dto';
 import { PriceTrendsPeriodEnum } from '../dto/priceTrendsPeriodEnum';
 import { StationOptionsDto } from '../dto/stationOptions.dto';
+import {
+  PriceTrends,
+  PriceTrendsDocument,
+  PriceTrendsSchema,
+} from '../schemas/priceTrends.schema';
 
 @Injectable()
 export class StationService {
   constructor(
     @InjectModel(Station.name) private stationModel: Model<StationDocument>,
     @InjectModel(Price.name) private priceModel: Model<PriceDocument>,
+    @InjectModel(PriceTrends.name)
+    private priceTrendsModel: Model<PriceTrendsDocument>,
   ) {}
 
   /**
@@ -103,10 +110,12 @@ export class StationService {
    * Find price trends
    * @param station_id
    * @param query
+   * @param saveToDb
    */
   async getPriceTrends(
     station_id: number = null,
     query: PricesTrendsDto,
+    saveToDb = false,
   ): Promise<any> {
     let stations = [];
     if (station_id !== null) {
@@ -163,7 +172,12 @@ export class StationService {
     if (stations) {
       const evolutionPromises: Promise<any>[] = stations.map(
         function (station) {
-          return this.getEvolutionPerStation(queryParams, station);
+          return this.getEvolutionPerStation(
+            queryParams,
+            station,
+            query.period,
+            saveToDb,
+          );
         }.bind(this),
       );
       evolutionPerStation = await Promise.all(evolutionPromises);
@@ -195,9 +209,29 @@ export class StationService {
    * Get evolution price per gas on station
    * @param queryParams
    * @param station
+   * @param period
+   * @param saveToDb
    * @private
    */
-  private async getEvolutionPerStation(queryParams: any, station) {
+  private async getEvolutionPerStation(
+    queryParams: any,
+    station,
+    period: PriceTrendsPeriodEnum,
+    saveToDb = false,
+  ) {
+    const priceTrends = await this.priceTrendsModel
+      .findOne({
+        period: period,
+        station_id: station.id,
+      })
+      .exec();
+    if (priceTrends && priceTrends.evolution && !saveToDb) {
+      return {
+        station_id: station.id,
+        evolution: priceTrends.evolution,
+      };
+    }
+
     const stationPrices = await this.priceModel
       .find({
         ...queryParams,
@@ -240,6 +274,18 @@ export class StationService {
         });
       }
     }
+
+    if (priceTrends) {
+      priceTrends.evolution = evolutionPerGas;
+      await priceTrends.save();
+    } else {
+      const newpriceTrends = new this.priceTrendsModel();
+      newpriceTrends.period = period;
+      newpriceTrends.station_id = station.id;
+      newpriceTrends.evolution = evolutionPerGas;
+      await newpriceTrends.save();
+    }
+
     return {
       station_id: station.id,
       evolution: evolutionPerGas,

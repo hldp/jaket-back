@@ -11,6 +11,8 @@ import { XMLParser } from 'fast-xml-parser';
 import { Iconv } from 'iconv';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Point } from '../dto/point.dto';
+import { StationService } from '../station/station.service';
+import { PriceTrendsPeriodEnum } from '../dto/priceTrendsPeriodEnum';
 
 @Injectable()
 export class OpenDataService {
@@ -22,6 +24,7 @@ export class OpenDataService {
     @InjectModel(Price.name) private priceModel: Model<PriceDocument>,
     @InjectModel(Schedule.name) private scheduleModel: Model<ScheduleDocument>,
     private httpService: HttpService,
+    private stationService: StationService,
   ) {}
 
   /**
@@ -51,6 +54,57 @@ export class OpenDataService {
         await Promise.all(saveActions);
         console.log('Done!');
       });
+
+    // Every day calculate price trends
+    console.log('Calculate price trends for all period...');
+    await this.stationService.getPriceTrends(
+      null,
+      {
+        period: PriceTrendsPeriodEnum.ALL,
+      },
+      true,
+    );
+    console.log('Done!');
+
+    console.log('Calculate price trends for last year period...');
+    await this.stationService.getPriceTrends(
+      null,
+      {
+        period: PriceTrendsPeriodEnum.LAST_YEAR,
+      },
+      true,
+    );
+    console.log('Done!');
+
+    console.log('Calculate price trends for last month period...');
+    await this.stationService.getPriceTrends(
+      null,
+      {
+        period: PriceTrendsPeriodEnum.LAST_MONTH,
+      },
+      true,
+    );
+    console.log('Done!');
+
+    console.log('Calculate price trends for last week period...');
+    await this.stationService.getPriceTrends(
+      null,
+      {
+        period: PriceTrendsPeriodEnum.LAST_WEEK,
+      },
+      true,
+    );
+    console.log('Done!');
+
+    console.log('Calculate price trends for last day period...');
+    await this.stationService.getPriceTrends(
+      null,
+      {
+        period: PriceTrendsPeriodEnum.LAST_DAY,
+      },
+      true,
+    );
+    console.log('Done!');
   }
 
   /**

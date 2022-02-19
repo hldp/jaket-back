@@ -19,6 +19,7 @@ import { LocalStrategy } from './account/local.strategy';
 import { JwtStrategy } from './account/jwt.strategy';
 import * as bcrypt from 'bcrypt';
 import { UserFillGas, UserFillGasSchema } from './schemas/userFillGas.schema';
+import { PriceTrends, PriceTrendsSchema } from './schemas/priceTrends.schema';
 
 dotenv.config({ path: process.env.DOTENV_CONFIG_PATH ?? './.env' });
 
@@ -30,6 +31,7 @@ dotenv.config({ path: process.env.DOTENV_CONFIG_PATH ?? './.env' });
       { name: Schedule.name, schema: ScheduleSchema },
       { name: Price.name, schema: PriceSchema },
       { name: UserFillGas.name, schema: UserFillGasSchema },
+      { name: PriceTrends.name, schema: PriceTrendsSchema },
     ]),
     MongooseModule.forFeatureAsync([
       {

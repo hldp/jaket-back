@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Station, StationDocument } from '../schemas/station.schema';
 import { ListAllStationsDto } from '../dto/listAllStations.dto';
@@ -7,6 +7,9 @@ import { StationResponseDto } from '../dto/stationResponse.dto';
 import { Price, PriceDocument } from '../schemas/price.schema';
 import { ListAllStationsForAverageDto } from '../dto/listAllStationsForAverage.dto';
 import { GasPriceAverageDto } from '../dto/gasPriceAverage.dto';
+import { PricesTrendsDto } from '../dto/pricesTrends.dto';
+import { PriceTrendsPeriodEnum } from '../dto/priceTrendsPeriodEnum';
+import { StationOptionsDto } from '../dto/stationOptions.dto';
 
 @Injectable()
 export class StationService {
@@ -37,13 +40,19 @@ export class StationService {
   /**
    * Return the station corresponding to the id
    * @param id
+   * @param options
    */
-  async findOne(id: number): Promise<Station> {
+  async findOne(id: number, options: StationOptionsDto = {}): Promise<Station> {
+    let selectPrice = '-__v';
+
+    if (!options.withPriceId) {
+      selectPrice += ' -_id';
+    }
     return this.stationModel
       .findOne({ _id: id })
       .populate({
         path: 'prices',
-        select: '-__v -_id',
+        select: selectPrice,
       })
       .populate({
         path: 'schedules',
@@ -77,20 +86,183 @@ export class StationService {
     const priceAveragePerGas = [];
     const data = await this.applyFilter(this.stationModel.find(), query);
     const prices = data.map((station) => station.prices);
-    const pricesPerGas = this.groupBy(prices.flat(), (price) => price.gas_id);
-    for (const [gas_id, prices] of pricesPerGas) {
+    const pricesPerGas = this.groupBy(prices.flat(), (price) => price.gas_name);
+    for (const [gas_name, prices] of pricesPerGas) {
       const totalPrice = prices.reduce((acc, value) => {
         return acc + value.price;
       }, 0);
       priceAveragePerGas.push({
-        gas_id: gas_id,
+        gas_name: gas_name,
         price_average: parseFloat((totalPrice / prices.length).toFixed(3)),
       });
     }
     return priceAveragePerGas;
   }
 
-  async applyFilter(search: any, query: ListAllStationsDto): Promise<any> {
+  /**
+   * Find price trends
+   * @param station_id
+   * @param query
+   */
+  async getPriceTrends(
+    station_id: number = null,
+    query: PricesTrendsDto,
+  ): Promise<any> {
+    let stations = [];
+    if (station_id !== null) {
+      const station = await this.findOne(station_id, { withPriceId: true });
+      if (!station) {
+        throw new HttpException(
+          "Station doesn't exist !",
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      stations = [station];
+    } else {
+      let searchQuery = {
+        filters: {},
+      };
+      if (query.position && query.radius) {
+        searchQuery = {
+          ...searchQuery,
+          filters: {
+            ...searchQuery.filters,
+            area: {
+              coordinate: query.position,
+              radius: query.radius,
+            },
+          },
+        };
+      }
+
+      if (query.gas_name) {
+        searchQuery = {
+          ...searchQuery,
+          filters: {
+            ...searchQuery.filters,
+            gasAvailables: [query.gas_name],
+          },
+        };
+      }
+      stations = await this.applyFilter(this.stationModel.find(), searchQuery, {
+        withPriceId: true,
+      });
+    }
+    const minDate = StationService.getMinDateByPeriod(query.period);
+
+    let queryParams = {};
+    if (minDate) {
+      queryParams = {
+        last_update: {
+          $gte: minDate,
+        },
+      };
+    }
+
+    let evolutionPerStation = [];
+    if (stations) {
+      const evolutionPromises: Promise<any>[] = stations.map(
+        function (station) {
+          return this.getEvolutionPerStation(queryParams, station);
+        }.bind(this),
+      );
+      evolutionPerStation = await Promise.all(evolutionPromises);
+    }
+
+    // Calcul moyenne de l'évolution des prix des stations
+    const evolutions = evolutionPerStation.map((e) => e.evolution);
+
+    const evolutionGroupByGas = this.groupBy(
+      evolutions.flat(),
+      (ev) => ev.gas_name,
+    );
+
+    const evolutionPerGas = { period: query.period, evolutions: [] };
+    for (const [gas_name, evolutions] of evolutionGroupByGas) {
+      evolutionPerGas.evolutions.push({
+        gas_name: gas_name,
+        evolution: (
+          evolutions.map((ev) => ev.evolution).reduce((c, n) => c + n) /
+          evolutions.length
+        ).toFixed(2),
+      });
+    }
+
+    return evolutionPerGas;
+  }
+
+  /**
+   * Get evolution price per gas on station
+   * @param queryParams
+   * @param station
+   * @private
+   */
+  private async getEvolutionPerStation(queryParams: any, station) {
+    const stationPrices = await this.priceModel
+      .find({
+        ...queryParams,
+        station_id: station.id,
+        _id: {
+          $nin: station.prices.map((price) => price._id),
+        },
+      })
+      .sort({ last_update: 1 })
+      .exec();
+
+    // get actual prices per gas
+    const actualPrices = station.prices;
+    const actualPricesPerGas = this.groupBy(
+      actualPrices.flat(),
+      (price) => price.gas_name,
+    );
+
+    // get previous prices per gas
+    const previousPricesPerGas = this.groupBy(
+      stationPrices.flat(),
+      (price) => price.gas_name,
+    );
+
+    const evolutionPerGas = [];
+    for (const [gas_name, prices] of actualPricesPerGas) {
+      if (previousPricesPerGas.get(gas_name)) {
+        const oldestPrice = previousPricesPerGas
+          .get(gas_name)
+          .reduce((c, n) => {
+            return Date.parse(n) < Date.parse(c) ? n : c;
+          });
+
+        evolutionPerGas.push({
+          gas_name: gas_name,
+          evolution: +(
+            ((prices[0].price - oldestPrice.price) / oldestPrice.price) *
+            100
+          ),
+        });
+      }
+    }
+    return {
+      station_id: station.id,
+      evolution: evolutionPerGas,
+    };
+  }
+
+  /**
+   * Apply filter to search stations
+   * @param search
+   * @param query
+   * @param options
+   */
+  async applyFilter(
+    search: any,
+    query: ListAllStationsDto,
+    options: StationOptionsDto = {},
+  ): Promise<any> {
+    let selectPrice = '-__v';
+
+    if (!options.withPriceId) {
+      selectPrice += ' -_id';
+    }
+
     //Select columns
     if (query.columns) {
       for (const column of query.columns) {
@@ -98,7 +270,7 @@ export class StationService {
         if (['prices', 'schedules'].includes(column)) {
           search.populate({
             path: column,
-            select: '-__v -_id',
+            select: column === 'prices' ? selectPrice : '-__v -_id',
           });
           search.select({ '-_id': 1 });
         } else {
@@ -108,7 +280,7 @@ export class StationService {
     } else {
       search.populate({
         path: 'prices',
-        select: '-__v -_id',
+        select: selectPrice,
       });
       search.populate({
         path: 'schedules',
@@ -126,7 +298,6 @@ export class StationService {
       });
       search.find({ prices: { $in: ids } });
     }
-
     //Filter by location
     if (query.filters?.area) {
       search.find({
@@ -134,7 +305,10 @@ export class StationService {
           $near: {
             $geometry: {
               type: 'Point',
-              coordinates: [+query.filters.area.coordinate.longitude, +query.filters.area.coordinate.latitude],
+              coordinates: [
+                +query.filters.area.coordinate.longitude,
+                +query.filters.area.coordinate.latitude,
+              ],
             },
             $maxDistance: +query.filters.area.radius,
           },
@@ -149,6 +323,12 @@ export class StationService {
     return search.exec();
   }
 
+  /**
+   * Group list by key
+   * @param list
+   * @param keyGetter
+   * @private
+   */
   private groupBy(list, keyGetter) {
     const map = new Map();
     list.forEach((item) => {
@@ -161,5 +341,35 @@ export class StationService {
       }
     });
     return map;
+  }
+
+  /**
+   * Get min date for period
+   * @param period
+   * @private
+   */
+  private static getMinDateByPeriod(period: PriceTrendsPeriodEnum) {
+    const currentDate = new Date();
+    const minDate = new Date();
+    switch (period) {
+      case PriceTrendsPeriodEnum.ALL:
+        return null;
+      case PriceTrendsPeriodEnum.LAST_YEAR:
+        minDate.setFullYear(currentDate.getFullYear() - 1);
+        break;
+      case PriceTrendsPeriodEnum.LAST_MONTH:
+        minDate.setMonth(currentDate.getMonth() - 1);
+        break;
+      case PriceTrendsPeriodEnum.LAST_WEEK:
+        return new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate() - 7,
+        );
+      case PriceTrendsPeriodEnum.LAST_DAY:
+        minDate.setMonth(currentDate.getDay() - 1);
+        break;
+    }
+    return minDate;
   }
 }

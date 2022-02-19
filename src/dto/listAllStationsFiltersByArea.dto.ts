@@ -1,7 +1,6 @@
+import { Coordinate } from './coordinate.model';
+
 export class ListAllStationsFiltersByAreaDto {
-  coordinate: {
-    longitude: number;
-    latitude: number;
-  };
+  coordinate: Coordinate;
   radius: number;
 }

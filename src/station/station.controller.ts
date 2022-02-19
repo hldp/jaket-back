@@ -3,6 +3,7 @@ import { StationService } from './station.service';
 import { OpenDataService } from '../import/opendata.service';
 import { ListAllStationsDto } from '../dto/listAllStations/listAllStations.dto';
 import { ListAllStationsForAverageDto } from '../dto/listAllStations/listAllStationsForAverage.dto';
+import { PricesTrendsDto } from '../dto/pricesTrends.dto';
 
 @Controller('stations')
 export class StationController {
@@ -21,9 +22,9 @@ export class StationController {
     return this.stationService.getPriceAverage(query);
   }
 
-  @Get('/prices/trends')
-  async getPriceTrends(@Query() query: ListAllStationsForAverageDto) {
-    return this.stationService.getPriceAverage(query);
+  @Get([':id/prices/trends', '/prices/trends'])
+  async getPriceTrends(@Param() params, @Query() query: PricesTrendsDto) {
+    return this.stationService.getPriceTrends(params.id ?? null, query);
   }
 
   @Get('/createOne')

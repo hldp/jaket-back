@@ -59,7 +59,7 @@ export class AccountService {
   async fillGas(user_id: number, fillGas: FillGasDto): Promise<boolean> {
     const userFillGas = new this.userFillGasModel();
     userFillGas.user_id = user_id;
-    userFillGas.gas_id = fillGas.gas_id;
+    userFillGas.gas_name = fillGas.gas_name;
     userFillGas.station_id = fillGas.station_id ?? null;
     userFillGas.date = fillGas.date !== null ? fillGas.date : new Date();
     userFillGas.quantity = fillGas.quantity;

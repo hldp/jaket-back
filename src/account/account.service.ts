@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { FillGasDto } from '../dto/fillGas.dto';
 import { UserFillGas } from '../schemas/userFillGas.schema';
 import { FillGasStatsPeriodEnum } from '../dto/fillGasStatsPeriodEnum';
+import { FillGasStatsDto } from '../dto/fillGasStats.dto';
 
 @Injectable()
 export class AccountService {
@@ -68,7 +69,10 @@ export class AccountService {
     return true;
   }
 
-  async fillGasStats(user_id: number, period: FillGasStatsPeriodEnum) {
+  async fillGasStats(
+    user_id: number,
+    period: FillGasStatsPeriodEnum,
+  ): Promise<FillGasStatsDto[]> {
     const minDate = new Date();
     const currentDate = new Date();
     let queryParams = {};
@@ -93,14 +97,48 @@ export class AccountService {
       })
       .exec();
 
-    let sumAverageLiterPrice = 0;
-    usersFillGas.forEach((userFillGas) => {
-      sumAverageLiterPrice += userFillGas.total_price / userFillGas.quantity;
-    });
+    const usersFillGasByGas = this.groupBy(
+      usersFillGas,
+      (userFillGas) => userFillGas.gas_name,
+    );
 
-    return {
-      averageLiterPrice: +sumAverageLiterPrice / usersFillGas.length,
-    };
+    const statsByGas = [];
+    for (const [gas_name, usersFillGas] of usersFillGasByGas) {
+      let sumAverageLiterPrice = 0;
+
+      usersFillGas.forEach((userFillGas) => {
+        sumAverageLiterPrice += userFillGas.total_price / userFillGas.quantity;
+      });
+
+      statsByGas.push({
+        gas_name: gas_name,
+        nbFill: usersFillGas.length,
+        averageLiterPrice: sumAverageLiterPrice / usersFillGas.length,
+        list: usersFillGas,
+      });
+    }
+
+    return statsByGas;
+  }
+
+  /**
+   * Group list by key
+   * @param list
+   * @param keyGetter
+   * @private
+   */
+  private groupBy(list, keyGetter) {
+    const map = new Map();
+    list.forEach((item) => {
+      const key = keyGetter(item);
+      const collection = map.get(key);
+      if (!collection) {
+        map.set(key, [item]);
+      } else {
+        collection.push(item);
+      }
+    });
+    return map;
   }
 
   /**

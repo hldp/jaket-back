@@ -38,7 +38,7 @@ export class AccountController {
   async fillGasStats(
     @Request() req,
     @Query() query: { period: FillGasStatsPeriodEnum },
-  ): Promise<FillGasStatsDto> {
+  ): Promise<FillGasStatsDto[]> {
     if (!Object.values(FillGasStatsPeriodEnum).includes(query.period)) {
       throw new HttpException('Period is not valid !', HttpStatus.BAD_REQUEST);
     }

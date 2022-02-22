@@ -118,7 +118,7 @@ describe('StationController (e2e)', () => {
         previousPrice = price;
       }
       //desc
-      gas = 'E95';
+      gas = 'SP95';
       response = await request(app.getHttpServer())
         .get('/stations')
         .query({
@@ -134,7 +134,7 @@ describe('StationController (e2e)', () => {
       for (const station of response.body.data) {
         const price = station.prices.find((x) => x.gas_name === gas).price;
         if (previousPrice != null) {
-          expect(previousPrice).toBeLessThanOrEqual(price);
+          expect(previousPrice).toBeGreaterThanOrEqual(price);
         }
         previousPrice = price;
       }

@@ -43,6 +43,7 @@ StationSchema.set('toJSON', {
         latitude: ret.position.coordinates[1],
       };
     }
+    delete ret.rawPrices;
     delete ret._id;
     delete ret.__v;
   },

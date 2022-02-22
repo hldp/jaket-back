@@ -8,9 +8,9 @@ import { Price, PriceDocument } from '../schemas/price.schema';
 import { ListAllStationsForAverageDto } from '../dto/listAllStations/listAllStationsForAverage.dto';
 import { GasPriceAverageDto } from '../dto/gasPriceAverage.dto';
 import { Order } from '../dto/listAllStations/listAllStationsOrders.dto';
-import { PricesTrendsDto } from '../dto/pricesTrends.dto';
-import { PriceTrendsPeriodEnum } from '../dto/priceTrendsPeriodEnum';
-import { StationOptionsDto } from '../dto/stationOptions.dto';
+import { PricesTrendsDto } from '../dto/priceTrends/pricesTrends.dto';
+import { PriceTrendsPeriodEnum } from '../dto/priceTrends/priceTrendsPeriodEnum';
+import { StationOptionsDto } from '../dto/listAllStations/stationOptions.dto';
 import {
   PriceTrends,
   PriceTrendsDocument,
@@ -381,6 +381,7 @@ export class StationService {
         search.sort({ _id: Order[query.orders.id] });
       }
       for (const [key, value] of Object.entries(query.orders.gas)) {
+        search.find({ ['rawPrices.' + key]: { $type: 'number' } });
         search.sort({ ['rawPrices.' + key]: Order[value.toString()] });
       }
     }

@@ -12,9 +12,9 @@ import {
 import { AccountService } from './account.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { FillGasDto } from '../dto/fillGas.dto';
-import { FillGasStatsDto } from '../dto/fillGasStats.dto';
-import { FillGasStatsPeriodEnum } from '../dto/fillGasStatsPeriodEnum';
+import { FillGasDto } from '../dto/fillGas/fillGas.dto';
+import { FillGasStatsDto } from '../dto/fillGas/fillGasStats.dto';
+import { FillGasStatsPeriodEnum } from '../dto/fillGas/fillGasStatsPeriodEnum';
 
 @Controller('')
 export class AccountController {

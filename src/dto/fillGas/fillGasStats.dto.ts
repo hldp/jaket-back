@@ -1,4 +1,4 @@
-import { UserFillGas } from '../schemas/userFillGas.schema';
+import { UserFillGas } from '../../schemas/userFillGas.schema';
 
 export class FillGasStatsDto {
   gas_name: string;

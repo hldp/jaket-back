@@ -3,7 +3,7 @@ import { StationService } from './station.service';
 import { OpenDataService } from '../import/opendata.service';
 import { ListAllStationsDto } from '../dto/listAllStations/listAllStations.dto';
 import { ListAllStationsForAverageDto } from '../dto/listAllStations/listAllStationsForAverage.dto';
-import { PricesTrendsDto } from '../dto/pricesTrends.dto';
+import { PricesTrendsDto } from '../dto/priceTrends/pricesTrends.dto';
 
 @Controller('stations')
 export class StationController {

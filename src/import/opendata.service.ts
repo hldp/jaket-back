@@ -12,7 +12,7 @@ import { Iconv } from 'iconv';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Point } from '../dto/point.dto';
 import { StationService } from '../station/station.service';
-import { PriceTrendsPeriodEnum } from '../dto/priceTrendsPeriodEnum';
+import { PriceTrendsPeriodEnum } from '../dto/priceTrends/priceTrendsPeriodEnum';
 
 @Injectable()
 export class OpenDataService {

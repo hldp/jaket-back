@@ -4,10 +4,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { FillGasDto } from '../dto/fillGas.dto';
+import { FillGasDto } from '../dto/fillGas/fillGas.dto';
 import { UserFillGas } from '../schemas/userFillGas.schema';
-import { FillGasStatsPeriodEnum } from '../dto/fillGasStatsPeriodEnum';
-import { FillGasStatsDto } from '../dto/fillGasStats.dto';
+import { FillGasStatsPeriodEnum } from '../dto/fillGas/fillGasStatsPeriodEnum';
+import { FillGasStatsDto } from '../dto/fillGas/fillGasStats.dto';
 
 @Injectable()
 export class AccountService {

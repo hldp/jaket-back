@@ -28,16 +28,15 @@ describe('StationController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    console.log(app);
     await app.init();
   });
 
   describe('/stations (GET)', function () {
     it('Choose format', async () => {
-      const columns = ['id' /*always here*/, 'name', 'prices'];
+      const columns = ['id', 'name', 'prices'];
       const response = await request(app.getHttpServer())
         .get('/stations')
-        .send({
+        .query({
           limit: 1,
           columns: columns,
         });
@@ -56,7 +55,7 @@ describe('StationController (e2e)', () => {
       const radius = 1000;
       const response = await request(app.getHttpServer())
         .get('/stations')
-        .send({
+        .query({
           limit: 10,
           filters: {
             area: {
@@ -82,7 +81,7 @@ describe('StationController (e2e)', () => {
       const gasAvailables = ['Gazole', 'SP98'];
       const response = await request(app.getHttpServer())
         .get('/stations')
-        .send({
+        .query({
           limit: 10,
           filters: {
             gasAvailables: gasAvailables,
@@ -93,6 +92,51 @@ describe('StationController (e2e)', () => {
         expect(
           station.prices.filter((value) => gasAvailables.includes(value)),
         ).toBeTruthy();
+      }
+    });
+
+    it('Order by gas price', async () => {
+      //asc
+      let gas = 'Gazole';
+      let response = await request(app.getHttpServer())
+        .get('/stations')
+        .query({
+          limit: 10,
+          orders: {
+            gas: {
+              [gas]: 'asc',
+            },
+          },
+        });
+      expect(response.status).toEqual(200);
+      let previousPrice = null;
+      for (const station of response.body.data) {
+        const price = station.prices.find((x) => x.gas_name === gas).price;
+        if (previousPrice != null) {
+          expect(previousPrice).toBeLessThanOrEqual(price);
+        }
+        previousPrice = price;
+      }
+      //desc
+      gas = 'E95';
+      response = await request(app.getHttpServer())
+        .get('/stations')
+        .query({
+          limit: 10,
+          orders: {
+            gas: {
+              [gas]: 'desc',
+            },
+          },
+        });
+      expect(response.status).toEqual(200);
+      previousPrice = null;
+      for (const station of response.body.data) {
+        const price = station.prices.find((x) => x.gas_name === gas).price;
+        if (previousPrice != null) {
+          expect(previousPrice).toBeLessThanOrEqual(price);
+        }
+        previousPrice = price;
       }
     });
   });

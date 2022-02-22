@@ -1,4 +1,4 @@
-import { Coordinate } from './coordinate.model';
+import { Coordinate } from '../coordinate.model';
 import { PriceTrendsPeriodEnum } from './priceTrendsPeriodEnum';
 
 export class PricesTrendsDto {

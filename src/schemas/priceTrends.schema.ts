@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { PriceTrendsPeriodEnum } from '../dto/priceTrendsPeriodEnum';
+import { PriceTrendsPeriodEnum } from '../dto/priceTrends/priceTrendsPeriodEnum';
 
 export type PriceTrendsDocument = PriceTrends & Document;
 

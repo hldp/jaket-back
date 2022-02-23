@@ -37,6 +37,11 @@ export class StationController {
     await this.openDataService.fetchFromOpenData();
   }
 
+  @Get(':id/price/history/:period')
+  async getPriceHistory(@Param() params) {
+    return await this.stationService.getPriceHistoric(params.id, params.period);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.stationService.findOne(id);

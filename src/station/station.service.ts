@@ -15,6 +15,8 @@ import {
   PriceTrends,
   PriceTrendsDocument,
 } from '../schemas/priceTrends.schema';
+import { PeriodPrice } from 'src/dto/periodPrice.dto';
+import { PriceHistory } from 'src/dto/priceHistory.dto';
 
 @Injectable()
 export class StationService {
@@ -143,7 +145,7 @@ export class StationService {
           },
         };
       }
-      if (query.gas_names.length > 0) {
+      if (query.gas_names?.length > 0) {
         searchQuery = {
           ...searchQuery,
           filters: {
@@ -459,5 +461,115 @@ export class StationService {
         break;
     }
     return minDate;
+  }
+
+  async getPriceHistoric(stationID: number, period: PriceTrendsPeriodEnum) {
+    const minDate = StationService.getMinDateByPeriod(period);
+    let queryParams = {};
+    if (minDate) {
+      queryParams = {
+        last_update: {
+          $gte: minDate,
+        },
+      };
+    }
+    const stationPrices = await this.priceModel
+      .find({
+        ...queryParams,
+        station_id: stationID,
+      })
+      .sort({ last_update: 1 })
+      .exec();
+
+    const stationPricesFiltered = this.filterStationsPrices(stationPrices);
+    return this.adpatHistoricPrices(stationPricesFiltered);
+  }
+
+  private filterStationsPrices(stationPrices: any[]) {
+    const filteredStationPrices: any[] = [];
+    let found = false;
+
+    stationPrices.forEach((price) => {
+      for (let i = 0; i < filteredStationPrices.length; i++) {
+        if (
+          price.gas_id === filteredStationPrices[i].gas_id &&
+          price.last_update.getDate() ===
+            filteredStationPrices[i].last_update.getDate()
+        ) {
+          found = true;
+        }
+      }
+      if (!found) {
+        filteredStationPrices.push(price);
+      }
+      found = false;
+    });
+    return filteredStationPrices;
+  }
+
+  private adpatHistoricPrices(stationPrices: any) {
+    const data: PriceHistory[] = [];
+    let inserted = false;
+    stationPrices.forEach((price) => {
+      const periodPrice: PeriodPrice = new PeriodPrice();
+      periodPrice.date = price.last_update.getDay();
+      periodPrice.price = price.price;
+      data.forEach((priceHistory) => {
+        if (priceHistory.gas === price.gas_name) {
+          priceHistory.data.push(periodPrice);
+          inserted = true;
+        }
+      });
+
+      if (!inserted) {
+        const newPriceHistory: PriceHistory = new PriceHistory();
+        newPriceHistory.gas = price.gas_name;
+        newPriceHistory.data = [];
+        const periodPrice: PeriodPrice = new PeriodPrice();
+        periodPrice.date = price.last_update.getDay();
+        periodPrice.price = price.price;
+        newPriceHistory.data.push(periodPrice);
+        data.push(newPriceHistory);
+      }
+      inserted = false;
+    });
+
+    data.map((priceHistory) => {
+      priceHistory.data.sort(
+        (periodA, periodB) => parseInt(periodA.date) - parseInt(periodB.date),
+      );
+    });
+
+    data.map((priceHistory) => {
+      priceHistory.data.forEach((element) => {
+        switch (parseInt(element.date)) {
+          case 0:
+            element.date = 'Dimanche';
+            break;
+          case 1:
+            element.date = 'Lundi';
+            break;
+          case 2:
+            element.date = 'Mardi';
+            break;
+          case 3:
+            element.date = 'Mercredi';
+            break;
+          case 4:
+            element.date = 'Jeudi';
+            break;
+          case 5:
+            element.date = 'Vendredi';
+            break;
+          case 6:
+            element.date = 'Samedi';
+            break;
+          default:
+            element.date = 'Inconnu';
+        }
+      });
+    });
+
+    return data;
   }
 }

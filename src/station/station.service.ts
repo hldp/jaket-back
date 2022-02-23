@@ -380,9 +380,27 @@ export class StationService {
       if (query.orders.id) {
         search.sort({ _id: Order[query.orders.id] });
       }
-      for (const [key, value] of Object.entries(query.orders.gas)) {
-        search.find({ ['rawPrices.' + key]: { $type: 'number' } });
-        search.sort({ ['rawPrices.' + key]: Order[value.toString()] });
+      if (query.orders.distance) {
+        //this will order by distance
+        search.find({
+          position: {
+            $near: {
+              $geometry: {
+                type: 'Point',
+                coordinates: [
+                  +query.orders.distance.longitude,
+                  +query.orders.distance.latitude,
+                ],
+              },
+            },
+          },
+        });
+      }
+      if (query.orders.gas) {
+        for (const [key, value] of Object.entries(query.orders.gas)) {
+          search.find({ ['rawPrices.' + key]: { $type: 'number' } });
+          search.sort({ ['rawPrices.' + key]: Order[value.toString()] });
+        }
       }
     }
 

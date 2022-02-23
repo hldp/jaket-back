@@ -1,3 +1,5 @@
+import { Coordinate } from '../coordinate.model';
+
 export enum Order {
   asc = 1,
   desc = -1,
@@ -9,5 +11,6 @@ export interface GasOrder {
 
 export class ListAllStationsOrdersDto {
   gas?: GasOrder[];
+  distance?: Coordinate;
   id?: Order;
 }

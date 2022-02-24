@@ -541,33 +541,10 @@ export class StationService {
     });
 
     data.map((priceHistory) => {
-      priceHistory.data.forEach((element) => {
-        switch (parseInt(element.date)) {
-          case 0:
-            element.date = 'Dimanche';
-            break;
-          case 1:
-            element.date = 'Lundi';
-            break;
-          case 2:
-            element.date = 'Mardi';
-            break;
-          case 3:
-            element.date = 'Mercredi';
-            break;
-          case 4:
-            element.date = 'Jeudi';
-            break;
-          case 5:
-            element.date = 'Vendredi';
-            break;
-          case 6:
-            element.date = 'Samedi';
-            break;
-          default:
-            element.date = 'Inconnu';
-        }
-      });
+      if (parseInt(priceHistory.data[0].date) === 0) {
+        priceHistory.data.push(priceHistory.data[0]);
+        priceHistory.data.splice(0, 1);
+      }
     });
 
     return data;

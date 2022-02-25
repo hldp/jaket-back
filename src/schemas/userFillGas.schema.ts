@@ -9,7 +9,7 @@ export class UserFillGas {
   user_id: number;
 
   @Prop()
-  gas_id: number;
+  gas_name: string;
 
   @Prop()
   station_id?: number;

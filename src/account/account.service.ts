@@ -4,9 +4,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { FillGasDto } from '../dto/fillGas.dto';
+import { FillGasDto } from '../dto/fillGas/fillGas.dto';
 import { UserFillGas } from '../schemas/userFillGas.schema';
-import { FillGasStatsPeriodEnum } from '../dto/fillGasStatsPeriodEnum';
+import { FillGasStatsPeriodEnum } from '../dto/fillGas/fillGasStatsPeriodEnum';
+import { FillGasStatsDto } from '../dto/fillGas/fillGasStats.dto';
 
 @Injectable()
 export class AccountService {
@@ -59,7 +60,7 @@ export class AccountService {
   async fillGas(user_id: number, fillGas: FillGasDto): Promise<boolean> {
     const userFillGas = new this.userFillGasModel();
     userFillGas.user_id = user_id;
-    userFillGas.gas_id = fillGas.gas_id;
+    userFillGas.gas_name = fillGas.gas_name;
     userFillGas.station_id = fillGas.station_id ?? null;
     userFillGas.date = fillGas.date !== null ? fillGas.date : new Date();
     userFillGas.quantity = fillGas.quantity;
@@ -68,7 +69,10 @@ export class AccountService {
     return true;
   }
 
-  async fillGasStats(user_id: number, period: FillGasStatsPeriodEnum) {
+  async fillGasStats(
+    user_id: number,
+    period: FillGasStatsPeriodEnum,
+  ): Promise<FillGasStatsDto[]> {
     const minDate = new Date();
     const currentDate = new Date();
     let queryParams = {};
@@ -93,14 +97,48 @@ export class AccountService {
       })
       .exec();
 
-    let sumAverageLiterPrice = 0;
-    usersFillGas.forEach((userFillGas) => {
-      sumAverageLiterPrice += userFillGas.total_price / userFillGas.quantity;
-    });
+    const usersFillGasByGas = this.groupBy(
+      usersFillGas,
+      (userFillGas) => userFillGas.gas_name,
+    );
 
-    return {
-      averageLiterPrice: +sumAverageLiterPrice / usersFillGas.length,
-    };
+    const statsByGas = [];
+    for (const [gas_name, usersFillGas] of usersFillGasByGas) {
+      let sumAverageLiterPrice = 0;
+
+      usersFillGas.forEach((userFillGas) => {
+        sumAverageLiterPrice += userFillGas.total_price / userFillGas.quantity;
+      });
+
+      statsByGas.push({
+        gas_name: gas_name,
+        nbFill: usersFillGas.length,
+        averageLiterPrice: sumAverageLiterPrice / usersFillGas.length,
+        list: usersFillGas,
+      });
+    }
+
+    return statsByGas;
+  }
+
+  /**
+   * Group list by key
+   * @param list
+   * @param keyGetter
+   * @private
+   */
+  private groupBy(list, keyGetter) {
+    const map = new Map();
+    list.forEach((item) => {
+      const key = keyGetter(item);
+      const collection = map.get(key);
+      if (!collection) {
+        map.set(key, [item]);
+      } else {
+        collection.push(item);
+      }
+    });
+    return map;
   }
 
   /**

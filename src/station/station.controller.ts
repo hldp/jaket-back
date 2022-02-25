@@ -1,8 +1,9 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { StationService } from './station.service';
 import { OpenDataService } from '../import/opendata.service';
-import { ListAllStationsDto } from '../dto/listAllStations.dto';
-import { ListAllStationsForAverageDto } from '../dto/listAllStationsForAverage.dto';
+import { ListAllStationsDto } from '../dto/listAllStations/listAllStations.dto';
+import { ListAllStationsForAverageDto } from '../dto/listAllStations/listAllStationsForAverage.dto';
+import { PricesTrendsDto } from '../dto/priceTrends/pricesTrends.dto';
 
 @Controller('stations')
 export class StationController {
@@ -21,9 +22,9 @@ export class StationController {
     return this.stationService.getPriceAverage(query);
   }
 
-  @Get('/prices/trends')
-  async getPriceTrends(@Query() query: ListAllStationsForAverageDto) {
-    return this.stationService.getPriceAverage(query);
+  @Get([':id/prices/trends', '/prices/trends'])
+  async getPriceTrends(@Param() params, @Query() query: PricesTrendsDto) {
+    return this.stationService.getPriceTrends(params.id ?? null, query);
   }
 
   @Get('/createOne')
@@ -34,6 +35,11 @@ export class StationController {
   @Get('/fetch')
   async fetchAll() {
     await this.openDataService.fetchFromOpenData();
+  }
+
+  @Get(':id/price/history/:period')
+  async getPriceHistory(@Param() params) {
+    return await this.stationService.getPriceHistoric(params.id, params.period);
   }
 
   @Get(':id')

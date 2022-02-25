@@ -12,9 +12,9 @@ import {
 import { AccountService } from './account.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { FillGasDto } from '../dto/fillGas.dto';
-import { FillGasStatsDto } from '../dto/fillGasStats.dto';
-import { FillGasStatsPeriodEnum } from '../dto/fillGasStatsPeriodEnum';
+import { FillGasDto } from '../dto/fillGas/fillGas.dto';
+import { FillGasStatsDto } from '../dto/fillGas/fillGasStats.dto';
+import { FillGasStatsPeriodEnum } from '../dto/fillGas/fillGasStatsPeriodEnum';
 
 @Controller('')
 export class AccountController {
@@ -38,7 +38,7 @@ export class AccountController {
   async fillGasStats(
     @Request() req,
     @Query() query: { period: FillGasStatsPeriodEnum },
-  ): Promise<FillGasStatsDto> {
+  ): Promise<FillGasStatsDto[]> {
     if (!Object.values(FillGasStatsPeriodEnum).includes(query.period)) {
       throw new HttpException('Period is not valid !', HttpStatus.BAD_REQUEST);
     }

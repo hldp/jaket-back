@@ -15,8 +15,8 @@ import {
   PriceTrends,
   PriceTrendsDocument,
 } from '../schemas/priceTrends.schema';
-import { PeriodPrice } from 'src/dto/periodPrice.dto';
-import { PriceHistory } from 'src/dto/priceHistory.dto';
+import { PriceHistory } from '../dto/priceHistory.dto';
+import { PeriodPrice } from '../dto/periodPrice.dto';
 
 @Injectable()
 export class StationService {

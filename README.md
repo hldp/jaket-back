@@ -39,3 +39,9 @@
    ```sh
    npm run start:dev
    ```
+   
+### Contact in case of problem
+
+- [Nicolas Labrousse](https://github.com/hldp/jaket-back/commits?author=NicolasLabrousse): Price history
+- [Lisa-Marie Demmer](https://github.com/hldp/jaket-back/commits?author=Lisa-Demmer): Account and fill history routes
+- [Damien Piedanna](https://github.com/hldp/jaket-back/commits?author=damien-piedanna): Station routes
